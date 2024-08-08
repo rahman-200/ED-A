@@ -1,0 +1,42 @@
+# Install and load necessary libraries
+install.packages("ggplot2")
+install.packages("cluster")
+install.packages("factoextra")
+
+library(ggplot2)
+library(cluster)
+library(factoextra)
+
+# Load the iris dataset
+data(iris)
+
+# Inspect the structure of the dataset
+str(iris)
+
+# Select numeric features (excluding the Species column)
+iris_data <- iris[, 1:4]
+
+# Standardize the data (important for clustering)
+scaled_iris <- scale(iris_data)
+
+# Determine the optimal number of clusters using the Elbow method
+fviz_nbclust(scaled_iris, kmeans, method = "wss") +
+  labs(subtitle = "Elbow Method")
+
+# Perform K-means clustering with the optimal number of clusters (e.g., 3)
+set.seed(123)  # For reproducibility
+kmeans_result <- kmeans(scaled_iris, centers = 3, nstart = 25)
+
+# Add cluster assignments to the original dataset
+iris$Cluster <- as.factor(kmeans_result$cluster)
+
+# Visualize the clusters
+fviz_cluster(kmeans_result, data = scaled_iris, 
+             geom = "point", 
+             ellipse.type = "convex", 
+             main = "K-means Clustering")
+
+# Analyze segment characteristics by calculating the mean values for each cluster
+cluster_means <- aggregate(iris_data, by = list(Cluster = iris$Cluster), mean)
+print(cluster_means)
+
